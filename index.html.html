@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anita & 小狗 一週年 60 題大挑戰</title>
+    <style>
+        :root { --pink: #ff85a1; --blue: #4da3ff; --bg: #fff5f7; }
+        body { font-family: -apple-system, "Noto Sans TC", sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
+        #app { background: white; width: 100%; max-width: 450px; border-radius: 30px; padding: 25px; text-align: center; box-shadow: 0 15px 40px rgba(255, 133, 161, 0.2); }
+        h1 { color: var(--pink); font-size: 22px; margin-bottom: 5px; }
+        .subtitle { color: #888; font-size: 13px; margin-bottom: 25px; }
+        .btn { width: 100%; padding: 16px; margin: 10px 0; border: none; border-radius: 15px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-pink { background: var(--pink); color: white; }
+        .btn-blue { background: var(--blue); color: white; }
+        .option { background: #fdfdfd; border: 2px solid #f0f0f0; text-align: left; padding: 14px; border-radius: 12px; margin-bottom: 10px; width: 100%; cursor: pointer; font-size: 14px; }
+        .option.correct { border-color: #4cd137; background: #e9ffea; color: #2ecc71; font-weight: bold; }
+        .option.wrong { border-color: #ff4757; background: #ffe9ea; color: #ff4757; }
+        .hidden { display: none; }
+        .progress-bar { width: 100%; height: 6px; background: #eee; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+        .progress-inner { height: 100%; width: 0%; transition: width 0.3s; }
+        .score-val { font-size: 50px; font-weight: 900; color: var(--pink); }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="start-screen">
+        <div style="font-size: 40px;">💑</div>
+        <h1>一週年愛情大測驗</h1>
+        <p class="subtitle">各 30 題，共 60 題的靈魂考驗！</p>
+        <button class="btn btn-pink" onclick="startQuiz('Anita')">我是 Anita (開始 30 題)</button>
+        <button class="btn btn-blue" onclick="startQuiz('LittleDog')">我是 小狗 (開始 30 題)</button>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <div class="progress-bar"><div id="progress-inner" class="progress-inner"></div></div>
+        <p id="progress-text" style="font-size: 11px; color: #bbb; text-align: right;"></p>
+        <h3 id="question" style="margin: 15px 0; min-height: 50px; color: #444; font-size: 17px;"></h3>
+        <div id="options"></div>
+        <button id="next-btn" class="btn btn-pink hidden" onclick="nextQuestion()">下一題</button>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <h2>測驗完成！</h2>
+        <div class="score-val" id="final-score">0</div>
+        <p id="feedback" style="color: #666; margin: 15px 0; font-size: 14px;"></p>
+        <button class="btn btn-pink" onclick="location.reload()">回主畫面</button>
+    </div>
+</div>
+
+<script>
+    const questions = {
+        Anita: [
+            { q: "最近小狗抱怨主管在生誰的氣？", a: ["小狗本人", "經理", "現場帶工工程師", "客戶"], c: 2 },
+            { q: "主管覺得這群工程師「不會」做什麼事？", a: ["寫程式", "帶工", "開會", "準時下班"], c: 1 },
+            { q: "工程師原本說幾點才要回來開會？", a: ["八點", "九點", "十點", "明天"], c: 1 },
+            { q: "實際上工程師最後幾點就出現了？", a: ["六點多", "七點多", "八點多", "沒出現"], c: 1 },
+            { q: "妳覺得工程師為什麼要拖時間？", a: ["現場太忙", "故意拖大家下班時間", "忘記開會", "主管太兇"], c: 1 },
+            { q: "下午五點多，哪三隻貓被拍到在開會？", a: ["Egg, Molen, Moca", "布丁, 麻吉, Moca", "布丁, Egg, 麻吉", "全都沒在"], c: 1 },
+            { q: "這場貓咪會議是在誰的房間？", a: ["小狗房", "妳房", "冠樺房", "客廳"], c: 2 },
+            { q: "誰被稱為「大i貓」？", a: ["Moca", "Egg", "Molen", "麻吉"], c: 1 },
+            { q: "小狗猜測 Egg 躲在哪裡？", a: ["被子裡", "櫃子裡", "沙發下", "陽台"], c: 1 },
+            { q: "誰最近爬到了冠樺的床上？", a: ["Molen", "布丁", "Moca", "麻吉"], c: 0 },
+            { q: "小狗開玩笑說，貓咪們喜歡那張床是因為喜歡什麼？", a: ["香味", "軟度", "熟女", "安靜"], c: 2 },
+            { q: "小狗問妳：你愛我，但更愛...？", a: ["貓咪", "錢", "冠樺", "睡覺"], c: 2 },
+            { q: "小狗抱怨主管生氣時，妳第一句話回什麼？", a: ["辛苦了", "怎麼了", "生誰的氣", "又要加班？"], c: 2 },
+            { q: "對話記錄的存檔日期是？", a: ["2024/12/31", "2025/01/01", "2025/12/31", "2025/10/30"], c: 2 },
+            { q: "妳跟小狗這幾天最常討論的人是？", a: ["主管", "冠樺", "同事", "家人"], c: 1 },
+            { q: "下午 05:19 妳傳照片時，說幾隻貓在開會？", a: ["二隻", "三隻", "四隻", "六隻"], c: 1 },
+            { q: "小狗預言到時候可能會有幾隻貓在冠樺房？", a: ["四隻", "五隻", "六隻", "八隻"], c: 2 },
+            { q: "小狗下午幾點看到貓咪的照片？", a: ["05:18", "06:18", "04:18", "07:18"], c: 0 },
+            { q: "主管在幾點的時候因為工程師說要帶工到九點而生氣？", a: ["06:56", "07:56", "08:56", "05:56"], c: 1 },
+            { q: "小狗對妳說「你也喜歡」是在討論什麼？", a: ["貓咪", "睡覺", "熟女/冠樺的床", "主管"], c: 2 },
+            { q: "妳去哪裡找不見的 Egg？", a: ["廚房", "客廳", "小狗房間", "妳房間"], c: 2 },
+            { q: "主管覺得現場帶工沒效率，是因為什麼時間不回來？", a: ["吃飯時間", "睡覺時間", "開會時間", "打卡時間"], c: 2 },
+            { q: "這一年來妳最常傳給小狗的訊息類型是？", a: ["貓咪照片", "工作抱怨", "問他要吃啥", "自拍照"], c: 0 },
+            { q: "聊天記錄中顯示當天是星期幾？", a: ["三", "四", "五", "六"], c: 1 },
+            { q: "妳跟小狗在一起多久了？", a: ["半年", "一年", "兩年", "三個月"], c: 1 },
+            { q: "Egg 被認為還在「線上」嗎？這是在指什麼？", a: ["網路", "開會現場", "醒著", "在房間"], c: 1 },
+            { q: "小狗對主管生氣的貼圖是什麼動作？", a: ["大哭", "搖頭(shake head)", "生氣火冒三丈", "睡覺"], c: 1 },
+            { q: "Molen 去冠樺房間之前，Anita 說現在四隻貓都在哪？", a: ["妳房間", "小狗房間", "冠樺房間", "客廳"], c: 2 },
+            { q: "這份測驗是誰幫妳做的？", a: ["同事", "小狗", "Gemini AI", "冠樺"], c: 2 },
+            { q: "最後一題：你們要一直幸福下去嗎？", a: ["要", "當然要", "絕對要", "以上皆是"], c: 3 }
+        ],
+        LittleDog: [
+            { q: "Anita 說 Molen 最近爬到了誰的床上？", a: ["你的", "她的", "冠樺的", "爸爸的"], c: 2 },
+            { q: "Anita 說哪三隻貓在開會？", a: ["布丁, 麻吉, Moca", "Egg, Molen, Moca", "全部六隻", "布丁, Molen, Egg"], c: 0 },
+            { q: "妳問 Anita：你愛我，但更愛...？", a: ["錢", "睡覺", "冠樺", "貓咪"], c: 2 },
+            { q: "Anita 猜 Egg 躲在哪裡不見了？", a: ["櫃子裡", "廚房", "你的房間", "她的房間"], c: 2 },
+            { q: "主管生氣是因為工程師說幾點才要開會？", a: ["八點", "九點", "十點", "明天"], c: 1 },
+            { q: "主管覺得這群工程師「不會」幹嘛？", a: ["寫程式", "帶工", "準時", "修電腦"], c: 1 },
+            { q: "Anita 回你的第一句話通常跟誰有關？", a: ["貓咪", "主管生誰的氣", "晚餐", "工作"], c: 1 },
+            { q: "你形容躲起來的 Egg 是什麼貓？", a: ["大E貓", "大i貓", "撒嬌貓", "邊緣貓"], c: 1 },
+            { q: "你說你家的貓喜歡冠樺的床，是因為喜歡？", a: ["軟", "香", "熟女", "乾淨"], c: 2 },
+            { q: "Anita 看到貓咪會議的照片反應是？", a: ["哈哈哈", "好可愛", "太扯了", "也想加入"], c: 0 },
+            { q: "聊天記錄存檔日是哪天？", a: ["2025/12/31", "2024/10/30", "2025/01/01", "2025/10/30"], c: 0 },
+            { q: "Anita 說現在四隻貓都在誰的房間？", a: ["你的", "她的", "冠樺的", "廚房"], c: 2 },
+            { q: "你抱怨主管時用的貼圖動作是？", a: ["點頭", "搖頭", "握手", "拍手"], c: 1 },
+            { q: "實際上工程師幾點就回公司開會了？", a: ["六點", "七點多", "八點", "九點"], c: 1 },
+            { q: "Anita 覺得工程師是故意拖大家什麼時間？", a: ["吃飯", "下班", "睡覺", "領錢"], c: 1 },
+            { q: "你說到時候冠樺房間會有幾隻貓？", a: ["四隻", "五隻", "六隻", "八隻"], c: 2 },
+            { q: "Anita 說她沒看到 Egg 後，你說他可能躲在？", a: ["某櫃子裡", "某箱子裡", "某床底下", "某陽台"], c: 0 },
+            { q: "你問 Anita 是否愛你，是在幾點幾分？", a: ["下午05:22", "下午06:22", "下午04:22", "下午07:22"], c: 0 },
+            { q: "Anita 說「跑到人家床上」的那隻貓是？", a: ["布丁", "Moca", "Molen", "麻吉"], c: 2 },
+            { q: "這一年來你最常收到的 Anita 照片是？", a: ["食物", "自拍", "貓咪", "風景"], c: 2 },
+            { q: "聊天記錄開頭的第一個話題是關於？", a: ["貓咪", "主管生氣", "我還沒想到", "你要回家了嗎"], c: 2 },
+            { q: "主管覺得現場帶工的工程師怎樣？", a: ["很優秀", "沒效率", "很辛苦", "很聽話"], c: 1 },
+            { q: "Anita 說「我跟你說，四隻貓都在冠樺房間」是幾點？", a: ["05:18", "05:19", "06:19", "04:19"], c: 1 },
+            { q: "你說「你也喜歡」這句話，是指 Anita 喜歡？", a: ["貓咪", "主管", "熟女/冠樺的床", "你"], c: 2 },
+            { q: "你們在一起一週年，Anita 最想要你記得什麼？", a: ["她很愛你", "她很愛冠樺", "她很愛貓", "以上皆是"], c: 3 },
+            { q: "Egg 躲起來的時候，你問他是否還在？", a: ["現場", "線上", "房裡", "機台旁"], c: 1 },
+            { q: "工程師拖到九點，你是在幾點幾分抱怨這件事的？", a: ["07:55", "07:56", "08:56", "06:56"], c: 1 },
+            { q: "Anita 去你房間看 Egg 的時間是？", a: ["05:10", "05:20", "06:20", "04:20"], c: 1 },
+            { q: "你家的貓咪總共有幾隻被提到？", a: ["3隻", "4隻", "5隻", "6隻"], c: 2 },
+            { q: "最後一題：Anita 漂亮還是貓咪漂亮？", a: ["Anita", "貓咪", "都漂亮(求生題)", "冠樺漂亮"], c: 2 }
+        ]
+    };
+
+    let currentRole = '';
+    let currentIdx = 0;
+    let score = 0;
+
+    function startQuiz(role) {
+        currentRole = role;
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        const theme = role === 'Anita' ? 'var(--pink)' : 'var(--blue)';
+        document.getElementById('progress-inner').style.backgroundColor = theme;
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const qData = questions[currentRole][currentIdx];
+        document.getElementById('progress-text').innerText = `${currentIdx + 1} / 30`;
+        document.getElementById('progress-inner').style.width = `${((currentIdx + 1) / 30) * 100}%`;
+        document.getElementById('question').innerText = qData.q;
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = '';
+        qData.a.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(i, btn);
+            optionsDiv.appendChild(btn);
+        });
+        document.getElementById('next-btn').classList.add('hidden');
+    }
+
+    function checkAnswer(idx, btn) {
+        const qData = questions[currentRole][currentIdx];
+        const all = document.querySelectorAll('.option');
+        all.forEach(b => b.style.pointerEvents = 'none');
+        if (idx === qData.c) {
+            btn.classList.add('correct');
+            score++;
+        } else {
+            btn.classList.add('wrong');
+            all[qData.c].classList.add('correct');
+        }
+        document.getElementById('next-btn').classList.remove('hidden');
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < 30) showQuestion();
+        else showResult();
+    }
+
+    function showResult() {
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        const final = Math.round((score / 30) * 100);
+        document.getElementById('final-score').innerText = final;
+        document.getElementById('feedback').innerText = final >= 80 ? "太強了！這一年來的小細節（跟冠樺的床）你都記住了！" : "再努力一點，貓咪跟另一半都在看喔！";
+    }
+</script>
+</body>
+</html>
